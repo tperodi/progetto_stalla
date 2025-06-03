@@ -1,18 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabase } from '@/lib/supabase'
 
+// PUT: aggiorna un bovino esistente
 export async function PUT(req: NextRequest, context: { params: { id: string } }) {
-  const { id } = context.params
-  const parsedId = parseInt(id)
+  const id = parseInt(context.params.id)
 
-  if (isNaN(parsedId)) {
+  if (isNaN(id)) {
     return NextResponse.json({ error: 'ID non valido' }, { status: 400 })
   }
 
   try {
     const body = await req.json()
 
-    // Rimuovi dal body eventuali proprietà non appartenenti alla tabella "bovino"
     const {
       matricola,
       nome,
@@ -22,7 +21,7 @@ export async function PUT(req: NextRequest, context: { params: { id: string } })
       id_madre,
       id_padre,
       id_stalla,
-      note
+      note,
     } = body
 
     const updateData = {
@@ -34,13 +33,10 @@ export async function PUT(req: NextRequest, context: { params: { id: string } })
       id_madre,
       id_padre,
       id_stalla,
-      note
+      note,
     }
 
-    const { error } = await supabase
-      .from('bovino')
-      .update(updateData)
-      .eq('id', parsedId)
+    const { error } = await supabase.from('bovino').update(updateData).eq('id', id)
 
     if (error) {
       console.error('Errore Supabase:', error)
@@ -54,13 +50,19 @@ export async function PUT(req: NextRequest, context: { params: { id: string } })
   }
 }
 
-
 // DELETE: elimina un bovino
-export async function DELETE(_req: NextRequest, { params }: { params: { id: string } }) {
-  const id = parseInt(params.id);
+export async function DELETE(_req: NextRequest, context: { params: { id: string } }) {
+  const id = parseInt(context.params.id)
 
-  const { error } = await supabase.from('bovino').delete().eq('id', id);
-  if (error) return NextResponse.json({ error }, { status: 500 });
+  if (isNaN(id)) {
+    return NextResponse.json({ error: 'ID non valido' }, { status: 400 })
+  }
 
-  return NextResponse.json({ message: 'Bovino eliminato' });
+  const { error } = await supabase.from('bovino').delete().eq('id', id)
+
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 })
+  }
+
+  return NextResponse.json({ message: 'Bovino eliminato' }, { status: 200 })
 }
