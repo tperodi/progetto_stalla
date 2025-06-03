@@ -2,8 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { supabase } from '@/lib/supabase'
 
 // PUT: aggiorna un bovino esistente
-export async function PUT(req: NextRequest, context: { params: { id: string } }) {
-  const id = parseInt(context.params.id)
+export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
+  const id = parseInt(params.id)
 
   if (isNaN(id)) {
     return NextResponse.json({ error: 'ID non valido' }, { status: 400 })
@@ -39,20 +39,18 @@ export async function PUT(req: NextRequest, context: { params: { id: string } })
     const { error } = await supabase.from('bovino').update(updateData).eq('id', id)
 
     if (error) {
-      console.error('Errore Supabase:', error)
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
 
     return NextResponse.json({ message: 'Bovino aggiornato' }, { status: 200 })
-  } catch (err) {
-    console.error('Errore generico:', err)
+  } catch  {
     return NextResponse.json({ error: 'Errore interno' }, { status: 500 })
   }
 }
 
 // DELETE: elimina un bovino
-export async function DELETE(_req: NextRequest, context: { params: { id: string } }) {
-  const id = parseInt(context.params.id)
+export async function DELETE(_req: NextRequest, { params }: { params: { id: string } }) {
+  const id = parseInt(params.id)
 
   if (isNaN(id)) {
     return NextResponse.json({ error: 'ID non valido' }, { status: 400 })
