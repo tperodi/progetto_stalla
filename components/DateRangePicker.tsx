@@ -31,15 +31,13 @@ export function DateRangePicker({
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0">
         <Calendar
-          mode="range"
-          selected={dateRange}
-          onSelect={(range: { from?: Date; to?: Date } | undefined) =>
+          selected={dateRange.from}
+          onSelect={(date: Date | undefined) =>
             setDateRange({
-              from: range?.from ?? undefined,
-              to: range?.to ?? undefined,
+              from: date ?? undefined,
+              to: undefined,
             })
           }
-          numberOfMonths={2}
         />
       </PopoverContent>
     </Popover>
