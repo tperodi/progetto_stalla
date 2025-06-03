@@ -33,7 +33,7 @@ export function DateRangePicker({
         <Calendar
           mode="range"
           selected={dateRange}
-          onSelect={(range) =>
+          onSelect={(range: { from?: Date; to?: Date } | undefined) =>
             setDateRange({
               from: range?.from ?? undefined,
               to: range?.to ?? undefined,
