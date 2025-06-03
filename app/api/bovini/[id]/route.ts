@@ -1,17 +1,20 @@
 // app/api/bovini/[id]/route.ts
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { supabase } from '@/lib/supabase'
 
-/* ---------- PUT /api/bovini/[id] ---------- */
+/* ---------- PUT: aggiorna un bovino ---------- */
 export async function PUT(
-  req: Request,                            // <-- usare Request
-  { params }: { params: { id: string } }   //     firma corretta
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }   // 👈  params è Promise
 ) {
-  const id = Number(params.id)
-  if (Number.isNaN(id)) {
+  const { id } = await params                        // 👈  await la promise
+  const bovinoId = Number(id)
+
+  if (!bovinoId) {
     return NextResponse.json({ error: 'ID non valido' }, { status: 400 })
   }
 
+  /* prendi solo i campi ammessi */
   const {
     matricola,
     nome,
@@ -37,7 +40,7 @@ export async function PUT(
       id_stalla,
       note,
     })
-    .eq('id', id)
+    .eq('id', bovinoId)
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 })
@@ -46,17 +49,20 @@ export async function PUT(
   return NextResponse.json({ message: 'Bovino aggiornato' }, { status: 200 })
 }
 
-/* ---------- DELETE /api/bovini/[id] ---------- */
+/* ---------- DELETE: elimina un bovino ---------- */
 export async function DELETE(
-  _req: Request,
-  { params }: { params: { id: string } }
+  _req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }   // 👈  stessa cosa qui
 ) {
-  const id = Number(params.id)
-  if (Number.isNaN(id)) {
+  const { id } = await params
+  const bovinoId = Number(id)
+
+  if (!bovinoId) {
     return NextResponse.json({ error: 'ID non valido' }, { status: 400 })
   }
 
-  const { error } = await supabase.from('bovino').delete().eq('id', id)
+  const { error } = await supabase.from('bovino').delete().eq('id', bovinoId)
+
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
