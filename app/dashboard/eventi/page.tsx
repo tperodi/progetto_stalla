@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/select'
 import { PlusCircle, Loader2, Pencil, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
+import BovinoCombobox from '@/components/shared/bovinoComboBox'
 
 const eventiOptions = [
   'Inseminazione',
@@ -45,6 +46,10 @@ export default function EventiSanitariRiproduttivi() {
     bovinoId: ''
   })
   const [loading, setLoading] = useState(true)
+  const [submitting, setSubmitting] = useState(false)
+
+  const [pagina, setPagina] = useState(1)
+  const cardPerPagina = 3
 
   const fetchEventi = async () => {
     try {
@@ -63,18 +68,25 @@ export default function EventiSanitariRiproduttivi() {
   }, [])
 
   const handleSubmit = async () => {
-    const method = editingId ? 'PUT' : 'POST'
-    const url = editingId ? `/api/eventi/${editingId}` : '/api/eventi'
+    if (!form.tipo || !form.data || !form.bovinoId) {
+      toast.error('Compila tutti i campi obbligatori')
+      return
+    }
+
+    setSubmitting(true)
+    const method = editingId ? 'PATCH' : 'POST'
+    const url = '/api/eventi'
 
     try {
       const res = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          tipo_evento: form.tipo,
-          data_evento: form.data,
+          id: editingId,
+          tipo: form.tipo,
+          data: form.data,
           descrizione: form.descrizione,
-          id_bovino: parseInt(form.bovinoId)
+          bovinoId: parseInt(form.bovinoId)
         })
       })
       if (!res.ok) throw new Error()
@@ -85,6 +97,8 @@ export default function EventiSanitariRiproduttivi() {
       fetchEventi()
     } catch {
       toast.error('Errore durante il salvataggio')
+    } finally {
+      setSubmitting(false)
     }
   }
 
@@ -102,24 +116,34 @@ export default function EventiSanitariRiproduttivi() {
   const handleDelete = async (id: number) => {
     if (!confirm('Vuoi eliminare questo evento?')) return
     try {
-      const res = await fetch(`/api/eventi/${id}`, { method: 'DELETE' })
+      const res = await fetch('/api/eventi', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id })
+      })
       if (!res.ok) throw new Error()
       toast.success('Evento eliminato')
       fetchEventi()
     } catch {
-      toast.error('Errore durante l eliminazione')
+      toast.error('Errore durante l\'eliminazione')
     }
   }
+
+  const eventiVisualizzati = eventi.slice(0, pagina * cardPerPagina)
+  const haAltro = eventi.length > eventiVisualizzati.length
 
   return (
     <div className="space-y-6 px-4 md:px-8 py-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <h1 className="text-2xl font-bold">Eventi sanitari e riproduttivi</h1>
-        <Button onClick={() => {
-          setForm({ tipo: '', data: '', descrizione: '', bovinoId: '' })
-          setEditingId(null)
-          setDialogOpen(true)
-        }} className="self-start md:self-auto">
+        <Button
+          onClick={() => {
+            setForm({ tipo: '', data: '', descrizione: '', bovinoId: '' })
+            setEditingId(null)
+            setDialogOpen(true)
+          }}
+          className="self-start md:self-auto"
+        >
           <PlusCircle className="mr-2 w-4 h-4" /> Nuovo evento
         </Button>
       </div>
@@ -129,13 +153,18 @@ export default function EventiSanitariRiproduttivi() {
           <Loader2 className="h-8 w-8 animate-spin" />
         </div>
       ) : (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {eventi.map((e) => (
-            <div key={e.id} className="border rounded-lg p-4 text-sm shadow-sm bg-white dark:bg-zinc-900">
-              <div className="font-medium mb-1 text-base text-primary">{e.tipo_evento}</div>
-              <p className="text-muted-foreground text-sm mb-1">{e.data_evento}</p>
-              <p className="text-sm">{e.descrizione}</p>
-              <p className="text-sm italic mt-1">Bovino: {e.bovino?.nome} ({e.bovino?.matricola})</p>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {eventiVisualizzati.map((e) => (
+            <div
+              key={e.id}
+              className="border rounded-lg p-4 text-sm shadow-sm bg-white dark:bg-zinc-900"
+            >
+              <div className="font-semibold text-primary text-base">{e.tipo_evento}</div>
+              <p className="text-muted-foreground text-sm">{e.data_evento}</p>
+              {e.descrizione && <p className="text-sm mt-1">{e.descrizione}</p>}
+              <p className="text-sm italic mt-1 text-zinc-500">
+                Bovino: {e.bovino?.nome} ({e.bovino?.matricola})
+              </p>
               <div className="mt-3 flex gap-2">
                 <Button size="icon" variant="outline" onClick={() => handleEdit(e)}>
                   <Pencil className="w-4 h-4" />
@@ -149,6 +178,14 @@ export default function EventiSanitariRiproduttivi() {
         </div>
       )}
 
+      {haAltro && (
+        <div className="flex justify-center mt-4">
+          <Button onClick={() => setPagina(prev => prev + 1)}>
+            Carica altri eventi
+          </Button>
+        </div>
+      )}
+
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="max-h-[90vh] overflow-y-auto">
           <DialogHeader>
@@ -156,7 +193,7 @@ export default function EventiSanitariRiproduttivi() {
           </DialogHeader>
           <div className="grid gap-4">
             <div>
-              <Label>Tipo evento</Label>
+              <Label>Tipo evento *</Label>
               <Select value={form.tipo} onValueChange={(val) => setForm({ ...form, tipo: val })}>
                 <SelectTrigger><SelectValue placeholder="Seleziona tipo" /></SelectTrigger>
                 <SelectContent>
@@ -168,7 +205,7 @@ export default function EventiSanitariRiproduttivi() {
             </div>
 
             <div>
-              <Label>Data evento</Label>
+              <Label>Data evento *</Label>
               <Input
                 type="date"
                 value={form.data}
@@ -179,21 +216,27 @@ export default function EventiSanitariRiproduttivi() {
             <div>
               <Label>Descrizione</Label>
               <Input
+                placeholder="Opzionale"
                 value={form.descrizione}
                 onChange={(e) => setForm({ ...form, descrizione: e.target.value })}
               />
             </div>
 
             <div>
-              <Label>ID Bovino</Label>
-              <Input
-                value={form.bovinoId}
-                onChange={(e) => setForm({ ...form, bovinoId: e.target.value })}
+              <Label>Bovino *</Label>
+              <BovinoCombobox
+                value={Number(form.bovinoId)}
+                onChange={(val) => setForm({ ...form, bovinoId: val.toString() })}
+                placeholder="Seleziona bovino"
               />
             </div>
 
-            <Button onClick={handleSubmit} className="mt-2">
-              {editingId ? 'Salva modifiche' : 'Salva evento'}
+            <Button onClick={handleSubmit} disabled={submitting} className="mt-2">
+              {submitting ? (
+                <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Salvataggio...</>
+              ) : (
+                editingId ? 'Salva modifiche' : 'Salva evento'
+              )}
             </Button>
           </div>
         </DialogContent>

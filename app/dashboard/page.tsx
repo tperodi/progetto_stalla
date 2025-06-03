@@ -80,29 +80,58 @@ export default function DashboardPage() {
   const itemsPerPage = 10; // PAGINAZIONE
 
   useEffect(() => {
-    const fetchAnimals = async () => {
-      try {
-        const res = await fetch('/api/bovini');
-        const data: Bovino[] = await res.json();
-        const normalized = data.map((bovino) => ({
-          ...bovino,
-          stato_produttivo: bovino.stato_produttivo ?? bovino.stato_riproduttivo ?? null,
-        }));
-        setAnimals(normalized);
-      } catch (err) {
-        console.error('Errore fetch bovini:', err);
-      }
-    };
-    fetchAnimals();
-  }, []);
+  const fetchAnimalsAndTori = async () => {
+    try {
+      const [boviniRes, toriRes] = await Promise.all([
+        fetch('/api/bovini'),
+        fetch('/api/tori'),
+      ]);
+      const boviniData: Bovino[] = await boviniRes.json();
+      type Toro = {
+        id: number;
+        nome: string | null;
+        note: string | null;
+      };
+      const toriData: Toro[] = await toriRes.json();
+
+      const toriMapped: Bovino[] = toriData.map((toro) => ({
+        id: toro.id,
+        matricola: `T-${toro.id}`, // generata fittiziamente
+        nome: toro.nome,
+        data_nascita: null,
+        sesso: 'M',
+        stato_riproduttivo: null,
+        id_madre: null,
+        id_padre: null,
+        id_stalla: null,
+        note: toro.note,
+        stato_produttivo: null,
+        data_ultimo_parto: null,
+        data_ultima_fecondazione: null,
+      }));
+
+      const normalized = [...boviniData, ...toriMapped].map((bovino) => ({
+        ...bovino,
+        stato_produttivo: bovino.stato_produttivo ?? bovino.stato_riproduttivo ?? null,
+      }));
+
+      setAnimals(normalized);
+    } catch (err) {
+      console.error('Errore fetch bovini/tori:', err);
+    }
+  };
+  fetchAnimalsAndTori();
+}, []);
+
 
   const total = animals.length;
 
   const getCountAndPercentage = (filter: (a: Bovino) => boolean) => {
-    const count = animals.filter(filter).length;
-    const percentage = total > 0 ? Number(((count / total) * 100).toFixed(2)) : 0;
-    return { count, percentage };
-  };
+  const count = animals.filter(filter).length;
+  const percentage = total > 0 ? Number(((count / total) * 100).toFixed(2)) : 0;
+  return { count, percentage };
+};
+
 
   const phaseStats = {
     'In lattazione': getCountAndPercentage((a) => a.stato_produttivo === 'In lattazione'),
@@ -119,8 +148,9 @@ export default function DashboardPage() {
 
   const filteredAnimals = animals.filter((a) => {
     const matchSearch =
-      a.matricola.toLowerCase().includes(search.toLowerCase()) ||
-      (a.nome?.toLowerCase() ?? '').includes(search.toLowerCase());
+  (a.matricola?.toLowerCase() ?? '').includes(search.toLowerCase()) ||
+  (a.nome?.toLowerCase() ?? '').includes(search.toLowerCase());
+
 
     const matchStatus =
       selectedStatus === 'Maschi'
@@ -185,7 +215,12 @@ export default function DashboardPage() {
             {visibleAnimals.map((a) => (
               <TableRow
                 key={a.matricola}
-                className={statusColors[a.stato_produttivo as keyof typeof statusColors] || ''}
+                className={
+  a.sesso === 'M'
+    ? statusColors['Maschi']
+    : statusColors[a.stato_produttivo as keyof typeof statusColors] || ''
+}
+
               >
                 <TableCell className="whitespace-nowrap">{a.matricola}</TableCell>
                 <TableCell className="whitespace-nowrap">{a.nome}</TableCell>
