@@ -6,7 +6,7 @@ import BenefitsSection from '@/components/landing/BenefitsSection'
 import TestimonialsSection from '@/components/landing/TestimonialsSection'
 import PricingSection from '@/components/landing/PricingSection'
 import FAQSection from '@/components/landing/FAQSection'
-import LoginSection from '@/components/landing/LoginSection'
+import AuthSection from '@/components/landing/LoginSection'
 import CTASection from '@/components/landing/CTASection'
 import Footer from '@/components/landing/Footer'
 export default function App() {
@@ -20,7 +20,7 @@ export default function App() {
         <TestimonialsSection />
         <PricingSection />
         <FAQSection />
-        <LoginSection />
+        <AuthSection />
         <CTASection />
       </main>
       <Footer />

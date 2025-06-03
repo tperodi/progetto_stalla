@@ -30,7 +30,7 @@ export default function RootLayout({
       >
         
         {children}
-        <Toaster />
+        <Toaster position="top-center" richColors closeButton />
       </body>
     </html>
   );

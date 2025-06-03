@@ -29,6 +29,7 @@ interface EventoFecondazione {
   data_fecondazione: string
   esito: boolean | null
   note: string | null
+  tipo: string | null 
   toro: {
     nome: string
   }
@@ -101,7 +102,7 @@ export default function FecondazioniPage() {
   const [bovini, setBovini] = useState<Bovino[]>([])
   const [tori, setTori] = useState<Toro[]>([])
   const [dialogOpen, setDialogOpen] = useState(false)
-  const [form, setForm] = useState({ data: '', bovinoId: '', toroId: '', esito: '', note: '' })
+  const [form, setForm] = useState({ data: '', bovinoId: '', toroId: '', esito: '', note: '',tipo: ''})
   const [filterEsito, setFilterEsito] = useState('')
   const [filterBovino, setFilterBovino] = useState('')
   const [filterToro, setFilterToro] = useState('')
@@ -126,7 +127,8 @@ export default function FecondazioniPage() {
     bovinoId: parseInt(form.bovinoId),
     toroId: parseInt(form.toroId),
     esito: form.esito === 'true',
-    note: form.note
+    note: form.note,
+    tipo: form.tipo || null // Aggiungi il campo tipo se necessario
   }
 
   console.log('▶️ Payload inviato a /api/fecondazioni:', payload)
@@ -148,7 +150,9 @@ export default function FecondazioniPage() {
 
     toast.success('Fecondazione registrata')
     setDialogOpen(false)
-    setForm({ data: '', bovinoId: '', toroId: '', esito: '', note: '' })
+    setForm({ data: '', bovinoId: '', toroId: '', esito: '', note: '', tipo: '' })
+    setPagina(1) 
+    setFilterEsito('') 
     fetchEventi()
   } catch (err) {
     console.error('❌ Eccezione nel salvataggio:', err)
@@ -226,6 +230,7 @@ export default function FecondazioniPage() {
             <div className="text-sm text-gray-600 mb-1"><span className="font-medium">Toro:</span> {ev.toro?.nome}</div>
             <div className="text-sm text-gray-500"><span className="font-medium">Data:</span> {new Date(ev.data_fecondazione).toLocaleDateString('it-IT')}</div>
             <div className="text-sm text-gray-500"><span className="font-medium">Esito:</span> {ev.esito === true ? 'Positiva' : ev.esito === false ? 'Negativa' : 'ND'}</div>
+            <div className="text-sm text-gray-500"><span className="font-medium">Tipo:</span> {ev.tipo || 'ND'}</div>
             {ev.note && <div className="text-sm text-muted-foreground mt-1"><span className="font-medium">Note:</span> {ev.note}</div>}
           </div>
         ))}
@@ -261,6 +266,13 @@ export default function FecondazioniPage() {
                 <SelectItem value="false">Negativa</SelectItem>
               </SelectContent>
             </Select>
+            <Input
+  placeholder="Tipo fecondazione (es. naturale, inseminazione...)"
+  value={form.tipo}
+  onChange={(e) => setForm({ ...form, tipo: e.target.value })}
+/>
+
+
             <Input placeholder="Note aggiuntive" value={form.note} onChange={e => setForm({ ...form, note: e.target.value })} />
             <Button onClick={handleSubmit}>Salva</Button>
           </div>

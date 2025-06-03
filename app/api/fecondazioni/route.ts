@@ -1,8 +1,6 @@
 import { NextResponse } from 'next/server'
 import { supabase } from '@/lib/supabase'
 
-
-
 // GET: tutte le fecondazioni con info su bovino e toro
 export async function GET() {
   const { data, error } = await supabase
@@ -12,6 +10,7 @@ export async function GET() {
       data_fecondazione,
       esito,
       note,
+      tipo,
       bovino: id_bovino ( id, nome, matricola ),
       toro: id_toro ( id, nome )
     `)
@@ -37,7 +36,8 @@ export async function POST(req: Request) {
       id_toro: body.toroId,
       data_fecondazione: body.data,
       esito: body.esito,
-      note: body.note
+      note: body.note,
+      tipo: body.tipo // Assicurati che il frontend invii 'tipo'
     })
     .select()
 

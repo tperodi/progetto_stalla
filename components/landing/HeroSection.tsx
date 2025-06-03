@@ -44,7 +44,7 @@ const HeroSection: React.FC = () => {
         <div className="md:w-1/2">
           <div className="rounded-lg shadow-xl overflow-hidden">
             <Image
-              src="https://images.unsplash.com/photo-1595872342452-387bc3e72bd6?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80"
+              src="/images/vacche-frisone-vacche-in-stalla-.jpg"
               alt="Gestione stalla digitale"
               width={1000}
               height={667}
