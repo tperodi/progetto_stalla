@@ -2,6 +2,21 @@ import { NextResponse } from 'next/server'
 import { supabase } from '@/lib/supabase'
 import { addDays, parseISO, isWithinInterval } from 'date-fns'
 
+type BovinoConFecondazione = {
+  id: number
+  id_bovino: number
+  data_fecondazione: string
+  bovino: {
+    id: number
+    nome: string
+    matricola: string
+  } | {
+    id: number
+    nome: string
+    matricola: string
+  }[] // fallback per array
+}
+
 export async function POST(req: Request) {
   const { start, end } = await req.json()
 
@@ -12,7 +27,7 @@ export async function POST(req: Request) {
       id,
       id_bovino,
       data_fecondazione,
-      bovino (
+      bovino:id_bovino (
         id,
         nome,
         matricola
@@ -60,13 +75,19 @@ export async function POST(req: Request) {
   })
 
   // 5. Risultato finale
-  const result = filtered.map(f => ({
-    id: f.bovino.id,
-    nome: f.bovino.nome,
-    matricola: f.bovino.matricola,
+  
+
+const result = filtered.map((f: BovinoConFecondazione) => {
+  const bovino = Array.isArray(f.bovino) ? f.bovino[0] : f.bovino
+  return {
+    id: bovino.id,
+    nome: bovino.nome,
+    matricola: bovino.matricola,
     data_ultima_fecondazione: f.data_fecondazione,
     data_previsto_parto: addDays(parseISO(f.data_fecondazione), 282).toISOString().split('T')[0],
-  }))
+  }
+})
+
 
   return NextResponse.json(result)
 }
