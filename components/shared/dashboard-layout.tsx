@@ -2,7 +2,6 @@
 
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/shared/app-sidebar";
-import { Toaster } from "sonner";
 import { Menu } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -39,7 +38,6 @@ export default function DashboardLayout({
         </main>
       </div>
 
-      <Toaster />
     </SidebarProvider>
   );
 }

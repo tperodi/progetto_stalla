@@ -89,6 +89,33 @@ export default function BoviniPage() {
     fetchBovini()
   }, [])
 
+  const nuovaMatricola = () => {
+  if (bovini.length === 0) return 'IT0000000001'  // Se non ci sono bovini, la matricola parte da "IT0000000001"
+
+  // Estrai l'ultima matricola e assicurati che sia valida
+  const ultimeMatricole = bovini
+    .map(b => b.matricola)
+    .sort((a, b) => b.localeCompare(a))  // Ordina le matricole in ordine decrescente
+  
+  const ultimaMatricola = ultimeMatricole[0];  // Ottieni la matricola più alta
+  
+  // Controllo se la matricola è nel formato corretto e ha una parte numerica valida
+  const numeroStr = ultimaMatricola.substring(2);  // Rimuovi "IT"
+  const numero = parseInt(numeroStr);
+
+  // Verifica che il numero sia valido
+  if (isNaN(numero)) {
+    throw new Error("Errore nel formato della matricola")
+  }
+
+  const nuovaMatricolaNumero = numero + 1;  // Incrementa il numero
+
+  // Riformatta il numero per avere sempre 10 cifre
+  return `IT${nuovaMatricolaNumero.toString().padStart(10, '0')}`;  // Aggiungi gli zeri iniziali se necessario
+}
+
+
+
   const onSubmit = async (data: BovinoForm) => {
     const isEditing = editingId !== null
     const method = isEditing ? 'PUT' : 'POST'
@@ -117,29 +144,32 @@ export default function BoviniPage() {
   }
 
   const openDialog = (b?: Bovino) => {
-    if (b) {
-      const safeData: Partial<BovinoForm> = {
-        matricola: b.matricola,
-        nome: b.nome,
-        sesso: b.sesso,
-        data_nascita: b.data_nascita,
-        stato_riproduttivo: b.stato_riproduttivo,
-        data_ultimo_parto: b.data_ultimo_parto ?? undefined,
-        data_ultima_fecondazione: b.data_ultima_fecondazione ?? undefined,
-        note: b.note ?? undefined,
-        id_madre: b.id_madre ?? undefined,
-        id_padre: b.id_padre ?? undefined,
-      }
-      Object.entries(safeData).forEach(([key, val]) =>
-        setValue(key as keyof BovinoForm, val ?? '')
-      )
-      setEditingId(b.id)
-    } else {
-      reset()
-      setEditingId(null)
+  if (b) {
+    const safeData: Partial<BovinoForm> = {
+      matricola: b.matricola,
+      nome: b.nome,
+      sesso: b.sesso,
+      data_nascita: b.data_nascita,
+      stato_riproduttivo: b.stato_riproduttivo,
+      data_ultimo_parto: b.data_ultimo_parto ?? undefined,
+      data_ultima_fecondazione: b.data_ultima_fecondazione ?? undefined,
+      note: b.note ?? undefined,
+      id_madre: b.id_madre ?? undefined,
+      id_padre: b.id_padre ?? undefined,
     }
-    setDialogOpen(true)
+    Object.entries(safeData).forEach(([key, val]) =>
+      setValue(key as keyof BovinoForm, val ?? '')
+    )
+    setEditingId(b.id)
+  } else {
+    reset()
+    setEditingId(null)
+    // Imposta la nuova matricola calcolata
+    setValue('matricola', nuovaMatricola())
   }
+  setDialogOpen(true)
+}
+
 
   const handleDelete = async (id: number) => {
     if (!confirm('Vuoi davvero eliminare questo bovino?')) return
