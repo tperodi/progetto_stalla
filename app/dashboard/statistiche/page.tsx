@@ -11,7 +11,7 @@ interface ToroSuccesso {
   percentuale_successo: number
 }
 
-type ViewMode = 'anno' | 'trimestre' | 'mese' | 'settimana' | 'giorno'
+type ViewMode = 'anno' | 'trimestre' | 'mese' | 'settimana' 
 
 export default function DashboardStatistiche() {
   const [year, setYear] = useState<number>(2025)
@@ -163,38 +163,51 @@ export default function DashboardStatistiche() {
   ]
 
   const tortaOption = {
-    title: { text: 'Distribuzione Fecondazioni per Toro', left: 'center' },
-    tooltip: {
-      trigger: 'item',
-      formatter: '{b}: {c} ({d}%)'
+  title: { text: 'Distribuzione Fecondazioni per Toro', left: 'center' },
+  tooltip: {
+    trigger: 'item',
+    formatter: '{b}: {c} ({d}%)'
+  },
+  color: pieColors,
+  legend: {
+    orient: 'vertical',  // Imposta la leggenda in verticale
+    left: 'right', // Posizione della leggenda
+    data: successData.map(t => t.toro_nome),  // Aggiungi tutti i nomi dei tori come opzioni nella leggenda
+    selected: successData.reduce<Record<string, boolean>>((acc, curr) => {
+      acc[curr.toro_nome] = true; // Imposta tutti i tori come selezionati di default
+      return acc;
+    }, {}), // Mappa per tenere traccia di quali tori sono selezionati
+    textStyle: {
+      color: '#333',
     },
-    color: pieColors,
-    series: [
-      {
-        type: 'pie',
-        radius: '60%',
-        center: ['50%', '50%'],
-        data: successData.map(t => ({ name: t.toro_nome, value: t.totali })),
-        emphasis: {
-          itemStyle: {
-            shadowBlur: 10,
-            shadowOffsetX: 0,
-            shadowColor: 'rgba(0, 0, 0, 0.5)'
-          }
-        },
-        label: {
-          formatter: '{b}: {d}%',
-          overflow: 'break',
-          fontSize: 12,
-          width: 120,
-          rich: {
-            b: { fontWeight: 'bold' }
-          }
-        },
-        labelLayout: { hideOverlap: false }
-      }
-    ]
-  }
+  },
+  series: [
+    {
+      type: 'pie',
+      radius: '60%',
+      center: ['50%', '50%'],
+      data: successData.map(t => ({ name: t.toro_nome, value: t.totali })),
+      emphasis: {
+        itemStyle: {
+          shadowBlur: 10,
+          shadowOffsetX: 0,
+          shadowColor: 'rgba(0, 0, 0, 0.5)'
+        }
+      },
+      label: {
+        formatter: '{b}: {d}%',
+        overflow: 'break',
+        fontSize: 12,
+        width: 120,
+        rich: {
+          b: { fontWeight: 'bold' }
+        }
+      },
+      labelLayout: { hideOverlap: false }
+    }
+  ]
+}
+
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
@@ -236,7 +249,7 @@ export default function DashboardStatistiche() {
               onChange={(e) => setViewMode(e.target.value as ViewMode)}
               className="border rounded px-3 py-1 shadow-sm text-sm"
             >
-              {['anno', 'trimestre', 'mese', 'settimana', 'giorno'].map((mode) => (
+              {['anno', 'trimestre', 'mese', 'settimana'].map((mode) => (
                 <option key={mode} value={mode}>{mode}</option>
               ))}
             </select>
@@ -256,7 +269,7 @@ export default function DashboardStatistiche() {
           />
         </Card>
 
-        <Card className="p-4 w-full md:w-[48%] xl:w-[48%]">
+        <Card className="p-4 w-full md:w-[55%] xl:w-[55%]">
           <ReactECharts
             ref={refTorta}
             option={tortaOption}
