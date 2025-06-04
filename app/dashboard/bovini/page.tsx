@@ -323,7 +323,16 @@ export default function BoviniPage() {
             <Label>Data nascita</Label>
             <Input type="date" {...register('data_nascita')} />
             <Label>Stato riproduttivo</Label>
-            <Input {...register('stato_riproduttivo')} />
+<Select onValueChange={(val) => setValue('stato_riproduttivo', val)}>
+  <SelectTrigger><SelectValue placeholder="Seleziona stato riproduttivo" /></SelectTrigger>
+  <SelectContent>
+    <SelectItem value="In asciutta">In asciutta</SelectItem>
+    <SelectItem value="In lattazione">In lattazione</SelectItem>
+    <SelectItem value="In accrescimento">In accrescimento</SelectItem>
+    <SelectItem value="In svezzamento">In svezzamento</SelectItem>
+  </SelectContent>
+</Select>
+
             <Label>Ultimo parto</Label>
             <Input type="date" {...register('data_ultimo_parto')} />
             <Label>Ultima fecondazione</Label>
